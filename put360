@@ -60,15 +60,24 @@ with TemporaryDirectory() as temp_dir:
         for src in args.files:
             if src == ".":
                 continue # Skip the folder
+            if Path(src).suffix in [".pk", ".xmp"]:
+                continue
 
             file_name = Path(src).with_suffix(".wav").name.upper()
             dst = Path(temp_dir) / file_name
             # Convert
             try:
                 print(f"Converting: {Path(src).name}")
-                FFmpeg().input(src).output(str(dst), ar="44100", ac=2).execute()
+                FFmpeg().input(src).output(
+                    str(dst),
+                    ar="44100",
+                    ac=2,
+                    af="loudnorm=tp=-0.1",
+                ).execute()
             except FFmpegError as err:
                 raise ValueError(f"Failed for '{src}'") from err
+            except UnicodeDecodeError:
+                continue # Skip
 
             # Send File
             with open(dst, 'rb') as file:
