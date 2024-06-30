@@ -1,0 +1,2 @@
+python-ffmpeg>=2.0.12
+rich-argparse>=1.5.2
