@@ -1,4 +1,4 @@
-#!/media/Storage/Files/Development/OpenSource/360script/venv/bin/python3
+#!./venv/bin/python3
 ################################################################################
 """
 360 Systems File Conversion and Upload Utility
