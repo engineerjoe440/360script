@@ -4,13 +4,17 @@
 
 ## Uploading a Sound Effect
 
-Uploading a sound effect can be as simple as calling the `put360` script with
+Uploading a sound effect can be as simple as calling the `cmd360` tool with
 the IP address of the 360Systems Instant Replay, and the path to the file to be
 converted and uploaded.
 
 ```shell
 > cmd360 put 192.168.2.36 "/media/Sound FX/Air Raid Siren.flac"
 ```
+
+## Downloading a Sound Effect
+
+You can also download a file from the Instant Replay machine.
 
 ```shell
 > cmd360 get 192.168.2.36 "AIR RAID SIREN.WAV"
