@@ -1,0 +1,21 @@
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "cmd360"
+authors = [{name = "Joe Stanley", email = "engineerjoe440@yahoo.com"}]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+dynamic = ["version", "description"]
+dependencies = [
+    "python-ffmpeg>=2.0.12",
+    "typer>=0.20.0",
+]
+
+[project.urls]
+Home = "https://github.com/engineerjoe440/360script"
+
+[project.scripts]
+cmd360 = "cmd360:app"

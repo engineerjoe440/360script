@@ -9,5 +9,5 @@ the IP address of the 360Systems Instant Replay, and the path to the file to be
 converted and uploaded.
 
 ```shell
-> put360 192.168.2.36 "/media/Sound FX/Air Raid Siren.flac"
+> cmd360 put 192.168.2.36 "/media/Sound FX/Air Raid Siren.flac"
 ```
