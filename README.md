@@ -11,3 +11,7 @@ converted and uploaded.
 ```shell
 > cmd360 put 192.168.2.36 "/media/Sound FX/Air Raid Siren.flac"
 ```
+
+```shell
+> cmd360 get 192.168.2.36 "AIR RAID SIREN.WAV"
+```
