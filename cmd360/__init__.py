@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ################################################################################
 """
 360 Systems File Conversion and Upload Utility
@@ -6,10 +7,10 @@ MIT License
 """
 ################################################################################
 
-import os
 import ftplib
-from tempfile import TemporaryDirectory
+import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import typer
 from ffmpeg import FFmpeg
@@ -18,15 +19,14 @@ from ffmpeg.errors import FFmpegError
 __version__ = "0.1.0"
 
 app = typer.Typer(help="360 Systems File Conversion and Upload Utility")
+FILES_ARGUMENT = typer.Argument(..., help="list of files to convert and send")
 
 @app.command()
 def put(
     host: str = typer.Argument(
         ..., help="IPv4 address of 360 Systems Instant Replay"
     ),
-    files: list[str] = typer.Argument(
-        ..., help="list of files to convert and send"
-    ),
+    files: list[str] = FILES_ARGUMENT,
     username: str = typer.Option(
         "360USER", help="360 Systems Instant Replay FTP username"
     ),
@@ -36,45 +36,45 @@ def put(
 ):
     """Send a File to 360 Systems Instant Replay after Conversion"""
     # Contextual Temporary Directory for the Modified File
-    with TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory() as temp_dir, ftplib.FTP(
+        host, username, password
+    ) as session:
 
-        with ftplib.FTP(host, username, password) as session:
+        if "." in files:
+            root = Path(os.getcwd())
+            for item in os.listdir(str(root)):
+                path = root / item
+                if path.is_file():
+                    files.append(str(path))
 
-            if "." in files:
-                root = Path(os.getcwd())
-                for item in os.listdir(str(root)):
-                    path = root / item
-                    if path.is_file():
-                        files.append(str(path))
+        # Convert and Send Files
+        for src in files:
+            if src == ".":
+                continue # Skip the folder
+            if Path(src).suffix in [".pk", ".xmp"]:
+                continue
 
-            # Convert and Send Files
-            for src in files:
-                if src == ".":
-                    continue # Skip the folder
-                if Path(src).suffix in [".pk", ".xmp"]:
-                    continue
+            file_name = Path(src).with_suffix(".wav").name.upper()
+            dst = Path(temp_dir) / file_name
+            # Convert
+            try:
+                print(f"Converting: {Path(src).name}")
+                FFmpeg().input(src).output(
+                    str(dst),
+                    ar="44100",
+                    ac=2,
+                    af="loudnorm=tp=-0.1",
+                ).execute()
+            except FFmpegError as err:
+                raise ValueError(f"Failed for '{src}'") from err
+            except UnicodeDecodeError:
+                continue # Skip
 
-                file_name = Path(src).with_suffix(".wav").name.upper()
-                dst = Path(temp_dir) / file_name
-                # Convert
-                try:
-                    print(f"Converting: {Path(src).name}")
-                    FFmpeg().input(src).output(
-                        str(dst),
-                        ar="44100",
-                        ac=2,
-                        af="loudnorm=tp=-0.1",
-                    ).execute()
-                except FFmpegError as err:
-                    raise ValueError(f"Failed for '{src}'") from err
-                except UnicodeDecodeError:
-                    continue # Skip
-
-                # Send File
-                with open(dst, 'rb') as file:
-                    resp = session.storbinary(f"STOR {file_name}", file)
-                    if "Transfer succeeded" in resp:
-                        print(f"Successfully Transferred: {file_name}")
+            # Send File
+            with open(dst, 'rb') as file:
+                resp = session.storbinary(f"STOR {file_name}", file)
+                if "Transfer succeeded" in resp:
+                    print(f"Successfully Transferred: {file_name}")
 
 @app.command()
 def get(
@@ -100,8 +100,8 @@ def get(
             session.retrbinary(f"RETR {file_name}", file.write)
         print(f"Successfully Retrieved: {file_name}")
 
-@app.command()
-def list(
+@app.command("list")
+def list_files(
     host: str = typer.Argument(
         ..., help="IPv4 address of 360 Systems Instant Replay"
     ),
